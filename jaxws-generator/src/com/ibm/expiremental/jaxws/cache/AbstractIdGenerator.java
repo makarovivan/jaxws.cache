@@ -194,10 +194,4 @@ public abstract class AbstractIdGenerator implements IdGenerator {
 		}
 		return buf;
 	}
-	
-	@Override
-	protected void finalize() throws Throwable {
-		CacheEnable.kill();
-		super.finalize();
-	}
 }

@@ -177,6 +177,7 @@ public class CacheEnable implements AlarmListener {
 	public static void kill() {
 		if (_instance != null && _instance.alarm) {
 			_instance.alarm = false;
+			_instance = null;
 			if (LOG.isLoggable(Level.INFO))
 				LOG.info("Properties watcher '" +Integer.toHexString(_instance.hashCode()) + "' for " + PROP_FILE + " turned off");
 		}
