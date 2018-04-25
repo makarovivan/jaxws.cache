@@ -50,19 +50,25 @@ public abstract class AbstractIdGenerator implements IdGenerator {
 
 			if (soapAction != null && isValidAction(soapAction)) {
 				try {
-					chunkedSupport(request);
-
 					request.setGeneratingId(true); // ** DO NOT REMOVE... THIS
 													// IS NEEDED FOR PROPER
 													// PARSING OF RESPONSE
 
-
-					ServletInputStream is = request.getInputStream();
+					ServletInputStream is;
+					try {
+						is = request.getInputStream();
+					} catch (IllegalStateException e) {
+						if (LOG.isLoggable(Level.FINE)) {
+							LOG.fine("Enabling chunked support for request: " + soapAction);
+						}
+						chunkedSupport(request);
+						is = request.getInputStream();
+					}
 					byte[] reqContent = getBytes(is);
 
 					cacheId = generateId(reqContent);
 					if (LOG.isLoggable(Level.FINEST)) {
-						LOG.fine("Create hash of SOAPEnvelope: " + cacheId);
+						LOG.finest("Create hash of SOAPEnvelope: " + cacheId);
 					}
 
 				} catch (IOException e) {
@@ -85,7 +91,7 @@ public abstract class AbstractIdGenerator implements IdGenerator {
 	}
 	protected abstract String generateId(byte[] reqContent);
 
-	private void chunkedSupport(ServletCacheRequest request) throws IOException {
+	protected void chunkedSupport(ServletCacheRequest request) throws IOException {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.entering(CLASS, "chunkedSupport", request);
 		}
@@ -102,7 +108,7 @@ public abstract class AbstractIdGenerator implements IdGenerator {
 				in.close();
 			} catch (Exception e) {
 				if (LOG.isLoggable(Level.WARNING)) {
-					LOG.log(Level.WARNING, "ServletInputStream didn't close", e);
+					LOG.log(Level.WARNING, "ServletInputStream was not closed", e);
 				}
 			}
 			inStreamInfo.put("ContentDataLength", new Long(bytes.length));
